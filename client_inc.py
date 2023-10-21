@@ -1,11 +1,12 @@
 import socket
 import threading
 import rsa
+import sys
 
 class ChatSocket:
-    def __init__(self):
+    def __init__(self, ip, port):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect(('127.0.0.1', 4444))
+        self.sock.connect((ip, port))
         self.public_key, self.private_key = rsa.newkeys(2048)
         self.other_clients_in_chat = {} 
     
@@ -26,7 +27,6 @@ class ChatSocket:
                     message_to_send = f"e2em|||{client_id}|||{encrypted_message}"
                     self.sock.send(message_to_send.encode())
 
-
     def receive(self):
         while True:
             data = self.sock.recv(4096)
@@ -44,8 +44,14 @@ class ChatSocket:
                 print(f"<$ {message}") 
 
 def main():
-    mysocket = ChatSocket()
+    if len(sys.argv) != 3:
+        print("Usage: python script.py <ip_address> <port>")
+        sys.exit(1)
 
+    ip_address = sys.argv[1]
+    port = int(sys.argv[2])
+
+    mysocket = ChatSocket(ip_address, port)
     
     receiver = threading.Thread(target=mysocket.receive)
     mysocket.sock.send(mysocket.public_key.save_pkcs1()) 

@@ -1,12 +1,11 @@
 import asyncio
+import sys
 from idgenerating import *
 from server_db import clients_db, chatrooms_db
 
-
-clients = clients_db 
-chatrooms = chatrooms_db 
+clients = clients_db
+chatrooms = chatrooms_db
 header = 4096
-ip, port = '127.0.0.1', 4444
 
 async def send_message(writer, message):
     writer.write(message.encode())
@@ -136,7 +135,14 @@ async def handle_client(reader, writer):
         del client
 
 async def main():
-    print("Server is started")
+    if len(sys.argv) != 3:
+        print("Usage: python script.py <ip_address> <port>")
+        sys.exit(1)
+
+    ip = sys.argv[1]
+    port = int(sys.argv[2])
+
+    print(f"Server is started on {ip}:{port}")
     try:
         server = await asyncio.start_server(handle_client, ip, port)
         async with server:
@@ -144,7 +150,7 @@ async def main():
     finally:
         clients_cut = {}
         for cid, values in clients.items():
-            clients_cut[cid] = {'name':values['name'], 'chatroom_id':values['chatroom_id'], 'publicKey':values['publicKey']}
+            clients_cut[cid] = {'name': values['name'], 'chatroom_id': values['chatroom_id'], 'publicKey': values['publicKey']}
         server_db = open("server_db.py", "w")
         server_db.write(f"clients_db = {clients_cut}\nchatrooms_db = {chatrooms}")
         server_db.close()
