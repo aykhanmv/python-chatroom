@@ -36,14 +36,12 @@ class Client:
     async def broadcast_to_all(self, message):
         for user_id, values in clients.items():
             if user_id != self.id:
-                writer = values['writer']
-                await self.send_message(writer, message)
+                await send_message(values['writer'],f"{message}")
     
-    async def multicast_to_chat(self, message):
+    async def multicast_to_chat(self, message):        
         for user_id, values in clients.items():
             if user_id != self.id and values['chatroom_id'] == self.chatroom_id:
-                writer = values['writer']
-                await self.send_message(writer, message)
+                await send_message(values['writer'],f"{message}")
 
 
     async def send_message(self, message):
